@@ -376,15 +376,22 @@ export function ChatScreen({ onCreditsExhausted }: { onCreditsExhausted?: () => 
       {/* ── Content C: ready, no messages ────────────────────────────────── */}
       {cs === "ready" && !inConversation && (
         <div className="flex flex-1 flex-col items-center justify-center overflow-y-auto px-6 py-10">
-          <div className="w-full max-w-[640px]">
-            <h2 className="text-[22px] font-semibold tracking-tight">
-              {state.user?.firstName ? `Hi ${state.user.firstName}, what can I help with?` : "What can I help with?"}
+          <div className="w-full max-w-[640px] text-center">
+            <h2 className="text-[40px] font-semibold leading-tight tracking-tight">
+              {state.user?.firstName ? `Hi ${state.user.firstName}` : "Hello"}
             </h2>
-            <p className="mt-1.5 text-[13px] text-muted-foreground">
-              {connectedAppIds.length > 0
-                ? `${connectedAppIds.slice(0, 2).join(", ")}${connectedAppIds.length > 2 ? ` +${connectedAppIds.length - 2} more` : ""} connected`
-                : "Connect apps to get started"}
+            <p className="text-[40px] font-semibold leading-tight tracking-tight">
+              What can I help you with?
             </p>
+            {connectedAppIds.length > 0 && (
+              <div className="mt-7 flex justify-center animate-[slide-up-fade_0.45s_cubic-bezier(0,0,0.2,1)_both]">
+                <AppStack
+                  connectedApps={connectedAppIds}
+                  onOpenConnectedApps={() => setShowConnectedApps(true)}
+                  onOpenAddTools={() => setShowAddTools(true)}
+                />
+              </div>
+            )}
             {showDemoStates && <div className="mt-10"><DemoStatesSection connectedAppIds={connectedAppIds} /></div>}
             {demoToggle}
             <div ref={bottomRef} />
@@ -462,6 +469,7 @@ export function ChatScreen({ onCreditsExhausted }: { onCreditsExhausted?: () => 
             onInsertMention={insertMention}
             onOpenAddTools={() => setShowAddTools(true)}
             onOpenConnectedApps={() => setShowConnectedApps(true)}
+            showToolStrip={inConversation || cs === "no-apps"}
             placeholder={cs === "no-apps" ? "Ask a general question…" : "Ask anything…"}
           />
         </div>
@@ -1041,6 +1049,69 @@ function DemoState({ label, children }: { label: string; children: React.ReactNo
   )
 }
 
+// ─── AppStack ────────────────────────────────────────────────────────────────
+
+const APP_STACK_SHOW = 4
+
+function AppStack({
+  connectedApps,
+  onOpenConnectedApps,
+  onOpenAddTools,
+}: {
+  connectedApps: string[]
+  onOpenConnectedApps?: () => void
+  onOpenAddTools?: () => void
+}) {
+  const displayed = connectedApps.slice(0, APP_STACK_SHOW)
+  const overflow = Math.max(0, connectedApps.length - APP_STACK_SHOW)
+  const hasOverflow = overflow > 0
+
+  return (
+    <div className="flex items-center">
+      {/* Stacked app icons — clickable */}
+      <button
+        type="button"
+        onClick={onOpenConnectedApps}
+        aria-label="Manage connected apps"
+        className="flex items-center"
+      >
+        {displayed.map((appId, i) => (
+          <div
+            key={appId}
+            className="relative size-5 overflow-hidden rounded-full border-[1.5px] border-background"
+            style={{ marginLeft: i === 0 ? 0 : -5, zIndex: i + 1 }}
+            title={appId}
+          >
+            <AppLogo name={appId} initials={appId.slice(0, 2).toUpperCase()} className="size-full rounded-full" />
+          </div>
+        ))}
+        {hasOverflow && (
+          <div
+            className="relative flex size-5 shrink-0 items-center justify-center rounded-full border-[1.5px] border-background bg-muted text-[8.5px] font-semibold text-muted-foreground"
+            style={{ marginLeft: -5, zIndex: displayed.length + 1 }}
+          >
+            +{overflow}
+          </div>
+        )}
+      </button>
+
+      {/* Plus button — separated by a gap when overflow badge is showing */}
+      <button
+        type="button"
+        onClick={onOpenAddTools}
+        aria-label="Add tools"
+        className={cn(
+          "flex size-5 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground/50 transition-colors hover:border-foreground/20 hover:text-muted-foreground",
+          hasOverflow ? "ml-3" : "ml-1.5",
+        )}
+        style={{ zIndex: connectedApps.length + 2 }}
+      >
+        <Add01Icon className="size-3" />
+      </button>
+    </div>
+  )
+}
+
 // ─── ComposerArea ─────────────────────────────────────────────────────────────
 
 /** Paper plane send icon — faces upper-right (classic send direction). */
@@ -1052,11 +1123,9 @@ function PaperPlaneIcon({ className }: { className?: string }) {
   )
 }
 
-const APP_STACK_MAX = 4
-
 function ComposerArea({
   input, onChange, onSend, sending, mentionOpen, connectedApps, onInsertMention,
-  onOpenAddTools, onOpenConnectedApps, placeholder = "Ask anything…",
+  onOpenAddTools, onOpenConnectedApps, showToolStrip = true, placeholder = "Ask anything…",
 }: {
   input: string
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
@@ -1067,6 +1136,7 @@ function ComposerArea({
   onInsertMention: (appId: string) => void
   onOpenAddTools?: () => void
   onOpenConnectedApps?: () => void
+  showToolStrip?: boolean
   placeholder?: string
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -1105,11 +1175,6 @@ function ComposerArea({
   }
 
   const canSend = !!input.trim() && !sending
-
-  // App stack: show latest 4, overflow as "+n"
-  const displayedApps = connectedApps.slice(0, APP_STACK_MAX)
-  const overflow = Math.max(0, connectedApps.length - APP_STACK_MAX)
-  const hasOverflow = overflow > 0
 
   return (
     <div className="relative">
@@ -1191,68 +1256,27 @@ function ComposerArea({
           </div>
         </div>
 
-        {/* Tool strip — app stack + plus button only */}
-        <div className="flex items-center border-t border-border bg-muted/40 px-3 py-1.5">
-          {/* App stack (overlapping circles) */}
-          {connectedApps.length > 0 ? (
-            <div className="flex items-center">
-              {/* Clickable stack */}
-              <button
-                type="button"
-                onClick={onOpenConnectedApps}
-                aria-label="Manage connected apps"
-                className="flex items-center"
-              >
-                {displayedApps.map((appId, i) => (
-                  <div
-                    key={appId}
-                    className="relative size-5 rounded-full border-[1.5px] border-background"
-                    style={{ marginLeft: i === 0 ? 0 : "-5px", zIndex: i + 1 }}
-                    title={appId}
-                  >
-                    <AppLogo
-                      name={appId}
-                      initials={appId.slice(0, 2).toUpperCase()}
-                      className="size-full rounded-full"
-                    />
-                  </div>
-                ))}
-                {overflow > 0 && (
-                  <div
-                    className="relative flex size-5 shrink-0 items-center justify-center rounded-full border-[1.5px] border-background bg-muted text-[8.5px] font-semibold text-muted-foreground"
-                    style={{ marginLeft: "-5px", zIndex: displayedApps.length + 1 }}
-                  >
-                    +{overflow}
-                  </div>
-                )}
-              </button>
-
-              {/* Plus button — gap depends on whether overflow is shown */}
+        {/* Tool strip — only when in conversation or no-apps state */}
+        {showToolStrip && (
+          <div className="flex items-center border-t border-border bg-muted/40 px-3 py-1.5 animate-[slide-up-fade_0.3s_cubic-bezier(0,0,0.2,1)_both]">
+            {connectedApps.length > 0 ? (
+              <AppStack
+                connectedApps={connectedApps}
+                onOpenConnectedApps={onOpenConnectedApps}
+                onOpenAddTools={onOpenAddTools}
+              />
+            ) : (
               <button
                 type="button"
                 onClick={onOpenAddTools}
                 aria-label="Add tools"
-                className={cn(
-                  "flex size-5 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground/50 transition-colors hover:border-foreground/20 hover:text-muted-foreground",
-                  hasOverflow ? "ml-2" : "ml-1.5",
-                )}
-                style={{ zIndex: connectedApps.length + 2 }}
+                className="flex size-5 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground/50 transition-colors hover:border-foreground/20 hover:text-muted-foreground"
               >
                 <Add01Icon className="size-3" />
               </button>
-            </div>
-          ) : (
-            /* No apps: just the plus button */
-            <button
-              type="button"
-              onClick={onOpenAddTools}
-              aria-label="Add tools"
-              className="flex size-5 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground/50 transition-colors hover:border-foreground/20 hover:text-muted-foreground"
-            >
-              <Add01Icon className="size-3" />
-            </button>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   )
