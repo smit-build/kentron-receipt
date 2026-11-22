@@ -17,7 +17,7 @@ interface WorkspacesEmptyProps {
 export function WorkspacesEmpty({ onCreate }: WorkspacesEmptyProps) {
   return (
     <div className="flex min-h-svh flex-1 flex-col">
-      <header className="flex h-14 shrink-0 items-center border-b border-border px-6">
+      <header className="flex h-header shrink-0 items-center border-b border-border px-6">
         <span className="text-[13px] font-medium text-foreground">
           All workspaces
         </span>

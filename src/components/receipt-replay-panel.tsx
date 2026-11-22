@@ -8,7 +8,7 @@
  * - Work: filter pills + card-style step rows + "then" connectors + animation
  */
 import { useEffect, useMemo, useState } from "react"
-import { Cancel01Icon, Tick01Icon } from "hugeicons-react"
+import { Cancel01Icon, Tick02Icon } from "hugeicons-react"
 import type { Receipt, ReceiptStep } from "@/lib/store"
 import { AppLogo } from "@/components/app-logo"
 import { integrations } from "@/lib/integrations"
@@ -107,7 +107,7 @@ export function ReceiptReplayPanel({ receipt, onClose }: ReceiptReplayPanelProps
             <div className="flex items-center gap-2">
               <p className="text-[13px] font-semibold">Execution trace</p>
               <span className="inline-flex items-center gap-1 rounded-sm bg-foreground/[0.06] px-1.5 py-0.5 text-[10px] font-medium text-foreground/60">
-                <Tick01Icon className="size-2.5" />
+                <Tick02Icon className="size-2.5" />
                 Chain intact
               </span>
             </div>
@@ -196,7 +196,7 @@ function SummaryTab({ receipt, counts, successRate, appBreakdown, overallStatus 
             overallStatus === "blocked" && "bg-destructive/10 text-destructive"
           )}
         >
-          {overallStatus === "completed" && <Tick01Icon className="size-3.5" />}
+          {overallStatus === "completed" && <Tick02Icon className="size-3.5" />}
           {overallStatus === "completed" ? "Completed" : overallStatus === "awaiting" ? "Awaiting approval" : "Blocked"}
         </span>
       </div>
@@ -339,7 +339,7 @@ function WorkTab({ receipt, filter, setFilter, filteredSteps, visibleCount, coun
                     )}
                   >
                     {visible && step.status === "success" && (
-                      <Tick01Icon className="size-2.5 text-background" />
+                      <Tick02Icon className="size-2.5 text-background" />
                     )}
                     {visible && step.status === "awaiting" && (
                       <span className="block size-1.5 rounded-full border border-foreground/40 border-t-transparent animate-spin" />

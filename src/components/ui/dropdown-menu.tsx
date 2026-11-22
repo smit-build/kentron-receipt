@@ -1,7 +1,7 @@
 import * as React from "react"
 import { cn } from "cn"
 import { DropdownMenu as DropdownMenuPrimitive } from "radix-ui"
-import { ArrowRight01Icon, Tick01Icon } from "hugeicons-react"
+import { ArrowRight01Icon, Tick02Icon } from "hugeicons-react"
 
 function DropdownMenu({
   ...props
@@ -103,7 +103,7 @@ function DropdownMenuCheckboxItem({
         data-slot="dropdown-menu-checkbox-item-indicator"
       >
         <DropdownMenuPrimitive.ItemIndicator>
-          <Tick01Icon
+          <Tick02Icon
           />
         </DropdownMenuPrimitive.ItemIndicator>
       </span>
@@ -146,7 +146,7 @@ function DropdownMenuRadioItem({
         data-slot="dropdown-menu-radio-item-indicator"
       >
         <DropdownMenuPrimitive.ItemIndicator>
-          <Tick01Icon
+          <Tick02Icon
           />
         </DropdownMenuPrimitive.ItemIndicator>
       </span>

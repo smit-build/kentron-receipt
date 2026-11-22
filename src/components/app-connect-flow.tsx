@@ -5,7 +5,7 @@
  * No ChooseToolsSheet. Settings gear on the connected tile handles tool management.
  */
 import { useState, useEffect } from "react"
-import { Tick01Icon } from "hugeicons-react"
+import { Tick02Icon } from "hugeicons-react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -127,7 +127,7 @@ export function AppConnectFlow({
               <ul className="flex flex-col gap-1">
                 {defaultTools(appId).slice(0, 4).map((t) => (
                   <li key={t} className="flex items-center gap-1.5 text-[12px] text-muted-foreground">
-                    <Tick01Icon className="size-3 shrink-0 text-foreground" />
+                    <Tick02Icon className="size-3 shrink-0 text-foreground" />
                     {t.replace(/_/g, " ")}
                   </li>
                 ))}

@@ -4,7 +4,7 @@
  * Expanded: ordered step rows with app logo, tool name, status, duration.
  */
 import { useState } from "react"
-import { ArrowDown01Icon, ArrowRight01Icon, File01Icon, MoreHorizontalIcon, Tick01Icon } from "hugeicons-react"
+import { ArrowDown01Icon, ArrowRight01Icon, File01Icon, MoreHorizontalIcon, Tick02Icon } from "hugeicons-react"
 import type { Receipt } from "@/lib/store"
 import { AppLogo } from "@/components/app-logo"
 import { integrations } from "@/lib/integrations"
@@ -67,7 +67,7 @@ export function ReceiptCard({ receipt, onReplay, showCoachmark, onCoachmarkDismi
               overallStatus === "blocked" && "bg-destructive/10 text-destructive"
             )}
           >
-            {overallStatus === "verified" && <><Tick01Icon className="mr-0.5 inline size-3" />Verified</>}
+            {overallStatus === "verified" && <><Tick02Icon className="mr-0.5 inline size-3" />Verified</>}
             {overallStatus === "awaiting" && "Awaiting approval"}
             {overallStatus === "blocked" && "Blocked"}
           </span>

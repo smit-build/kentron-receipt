@@ -68,3 +68,57 @@ Full visual spec lives in `DESIGN.md`. Headline rules:
 - `Receipt - Individual MCP Workspace.html` (not in this repo — original
   Figma-exported static clone, used as the structural blueprint).
 - Kentron marketing site: https://kentron-website-alpha.vercel.app/
+
+## Design System — Mandatory Instructions
+
+@DESIGN.md
+
+The design.md file is the single source of truth
+for all UI and visual design decisions.
+
+MANDATORY RULES:
+
+1. Read and follow design.md before making UI changes.
+2. Do not invent new design patterns when an
+   existing documented pattern applies.
+3. Do not use arbitrary spacing, colors, typography,
+   radius, shadows or component styles.
+4. All new components must follow the existing
+   design system.
+5. Reusable components must maintain visual
+   consistency across the application.
+6. If design.md lacks necessary guidance, identify
+   the gap and improve the documentation.
+7. Never sacrifice visual quality just to follow
+   a weak or incomplete design rule.
+8. When the design system conflicts with a
+   professional UX requirement, evaluate the
+   conflict and update the system appropriately.
+9. Before completing UI work, verify that the
+   rendered interface follows design.md.
+10. Do not consider a UI task complete merely
+    because the code compiles.
+
+## Conversational AI — Mandatory Instructions
+
+@CONVERSATIONAL_AI.md
+
+The CONVERSATIONAL_AI.md file is the canonical behavioral specification
+for all Receipt AI conversational features and demos.
+
+MANDATORY RULES:
+
+1. Every UI implementation of chat features must follow DESIGN.md.
+2. Every conversational demo, mock response, or AI behavior must follow
+   CONVERSATIONAL_AI.md — including demo state content in components.
+3. New sample conversations or mock AI messages added to any component
+   must follow the behavioral specification: no filler openers, no
+   invented information, grounded source attribution, natural prose.
+4. Any change to conversational behavior or demo content must be
+   evaluated against the examples in docs/ai/CONVERSATION_EXAMPLES.md
+   before shipping.
+5. The examples library (CONVERSATION_EXAMPLES.md) is the reference for
+   good vs. bad AI responses. When in doubt, compare against it.
+6. Permissions and guardrails are enforced in trusted app code, not in
+   UI mock data — demo states must accurately represent what a
+   permission-aware agent would actually say.

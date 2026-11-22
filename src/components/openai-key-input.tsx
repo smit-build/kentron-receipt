@@ -4,7 +4,7 @@
  * Stores only hasOpenAIKey + last 4 chars — never the raw key.
  */
 import { useState } from "react"
-import { Copy01Icon, Tick01Icon } from "hugeicons-react"
+import { Copy01Icon, Tick02Icon } from "hugeicons-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useStore } from "@/lib/store"
@@ -136,7 +136,7 @@ export function OpenAIKeyInput({ onSaved, compact: _compact }: OpenAIKeyInputPro
 
       {testState === "valid" && (
         <div className="flex items-center gap-1.5 text-[13px] font-medium text-foreground">
-          <Tick01Icon className="size-4" />
+          <Tick02Icon className="size-4" />
           Key valid — saved.
         </div>
       )}

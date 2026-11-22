@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Copy01Icon, Plug01Icon, SourceCodeIcon, Tick01Icon } from "hugeicons-react"
+import { Copy01Icon, Plug01Icon, SourceCodeIcon, Tick02Icon } from "hugeicons-react"
 import { SiClaude, SiClaudecode, SiCursor } from "react-icons/si"
 
 import { Button } from "@/components/ui/button"
@@ -119,7 +119,7 @@ export function ConnectMcpDialog({
               aria-label="Copy commands"
               onClick={handleCopy}
             >
-              {copied ? <Tick01Icon /> : <Copy01Icon />}
+              {copied ? <Tick02Icon /> : <Copy01Icon />}
             </Button>
           </div>
         </div>

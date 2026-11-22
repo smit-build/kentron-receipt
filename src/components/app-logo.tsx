@@ -18,7 +18,7 @@ export function AppLogo({ name, initials, className }: AppLogoProps) {
       )}
     >
       {logo ? (
-        <logo.Icon className="size-4.5" color={logo.hex} />
+        <logo.Icon className="size-[1.125rem]" color={logo.hex} />
       ) : (
         <span className="text-[9px] font-bold tracking-wide">{initials}</span>
       )}

@@ -6,7 +6,7 @@
 import { useEffect, useRef, useState } from "react"
 import {
   Copy01Icon,
-  Tick01Icon,
+  Tick02Icon,
   ArrowLeft01Icon,
   AlertCircleIcon,
   File01Icon,
@@ -22,6 +22,7 @@ import {
 import { HowReceiptWorks } from "@/components/how-receipt-works"
 import { useStore } from "@/lib/store"
 import { waitForClientCall, type ClientType, CLIENT_LABELS } from "@/lib/services/clients"
+import { clientLogos } from "@/lib/app-logos"
 import { buildSampleReceipts } from "@/lib/services/receipts"
 import type { Receipt } from "@/lib/store"
 
@@ -108,7 +109,7 @@ function CopyButton({ text }: { text: string }) {
       className="shrink-0 rounded p-1 text-muted-foreground hover:text-foreground"
       aria-label="Copy"
     >
-      {copied ? <Tick01Icon className="size-3.5" /> : <Copy01Icon className="size-3.5" />}
+      {copied ? <Tick02Icon className="size-3.5" /> : <Copy01Icon className="size-3.5" />}
     </button>
   )
 }
@@ -232,8 +233,12 @@ export function ConnectClientDialog({
                     onClick={() => handleSelectClient(c.type)}
                     className="flex flex-col items-center gap-1.5 rounded-lg border border-border p-3 text-center hover:bg-muted/60 transition-colors"
                   >
-                    <div className="flex size-9 items-center justify-center rounded-[6px] border border-border bg-muted text-[11px] font-bold text-muted-foreground">
-                      {c.abbr}
+                    <div className="flex size-9 items-center justify-center rounded-[6px] border border-border bg-background text-muted-foreground">
+                      {clientLogos[c.type] ? (
+                        (() => { const l = clientLogos[c.type]; return <l.Icon className="size-[1.125rem]" color={l.hex} /> })()
+                      ) : (
+                        <span className="text-[11px] font-bold">{c.abbr}</span>
+                      )}
                     </div>
                     <span className="text-[12px] font-medium">{CLIENT_LABELS[c.type]}</span>
                     <span className="text-[11px] text-muted-foreground leading-tight">{c.description}</span>
@@ -350,7 +355,7 @@ export function ConnectClientDialog({
             <div className="flex flex-col gap-4 py-2">
               <div className="flex items-center gap-3 rounded-md border border-border bg-muted/40 px-4 py-3">
                 <div className="flex size-8 items-center justify-center rounded-full border border-foreground/20 bg-foreground/5">
-                  <Tick01Icon className="size-4 text-foreground" />
+                  <Tick02Icon className="size-4 text-foreground" />
                 </div>
                 <div>
                   <p className="text-[13px] font-medium">First call received</p>

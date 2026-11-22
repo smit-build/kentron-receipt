@@ -4,7 +4,7 @@
  */
 import { useState, useRef } from "react"
 import type { KeyboardEvent } from "react"
-import { Cancel01Icon, Copy01Icon, Tick01Icon } from "hugeicons-react"
+import { Cancel01Icon, Copy01Icon, Tick02Icon } from "hugeicons-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
@@ -108,7 +108,7 @@ export function InviteInput({ compact: _compact }: InviteInputProps) {
       </div>
 
       <Button variant="outline" size="sm" onClick={copyLink} className="w-fit">
-        {copied ? <Tick01Icon data-icon="inline-start" /> : <Copy01Icon data-icon="inline-start" />}
+        {copied ? <Tick02Icon data-icon="inline-start" /> : <Copy01Icon data-icon="inline-start" />}
         {copied ? "Copied!" : "Copy invite link"}
       </Button>
 

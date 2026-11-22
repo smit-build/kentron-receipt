@@ -38,7 +38,7 @@ export function OnboardingLayout({
   return (
     <div className="flex min-h-svh flex-col bg-background">
       {/* Header */}
-      <header className="flex h-14 shrink-0 items-center justify-between border-b border-border px-6">
+      <header className="flex h-header shrink-0 items-center justify-between border-b border-border px-6">
         <div className="flex items-center gap-2">
           <img src={receiptLogo} alt="Receipt" className="size-6 rounded-[4px] object-cover" />
           <span className="text-[13px] font-semibold tracking-tight">Receipt</span>

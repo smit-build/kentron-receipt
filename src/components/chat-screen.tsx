@@ -25,7 +25,7 @@ import {
   Mic01Icon,
   Search01Icon,
   Settings01Icon,
-  Tick01Icon,
+  Tick02Icon,
   Upload01Icon,
   User02Icon,
 } from "hugeicons-react"
@@ -377,10 +377,10 @@ export function ChatScreen({ onCreditsExhausted }: { onCreditsExhausted?: () => 
       {cs === "ready" && !inConversation && (
         <div className="flex flex-1 flex-col items-center justify-center overflow-y-auto px-6 py-10">
           <div className="w-full max-w-[640px] text-center">
-            <h2 className="text-[40px] font-semibold leading-tight tracking-tight">
+            <h2 className="text-[32px] font-[500] leading-tight tracking-tight">
               {state.user?.firstName ? `Hi ${state.user.firstName}` : "Hello"}
             </h2>
-            <p className="text-[40px] font-semibold leading-tight tracking-tight">
+            <p className="text-[32px] font-[500] leading-tight tracking-tight">
               What can I help you with?
             </p>
             {connectedAppIds.length > 0 && (
@@ -438,7 +438,7 @@ export function ChatScreen({ onCreditsExhausted }: { onCreditsExhausted?: () => 
       )}
 
       {/* ── Unified sticky footer ─────────────────────────────────────────── */}
-      <div className="shrink-0 bg-background px-6 py-3">
+      <div className="shrink-0 bg-background px-6 pt-3 pb-5">
         <div className="mx-auto max-w-[640px]">
           {cs === "ready" && !inConversation && connectedAppIds.length > 0 && (
             <div className="mb-2 flex flex-col divide-y divide-border">
@@ -447,7 +447,7 @@ export function ChatScreen({ onCreditsExhausted }: { onCreditsExhausted?: () => 
                   key={prompt.text}
                   type="button"
                   onClick={() => creditsRemaining > 0 ? send(prompt.text) : setInput(prompt.text)}
-                  className="-mx-1 flex items-center gap-3 rounded px-1 py-2.5 text-left transition-colors hover:bg-muted/40"
+                  className="flex items-center gap-3 px-1 py-2.5 text-left transition-colors hover:bg-muted/40"
                 >
                   <AppLogo
                     name={prompt.appIds[0]}
@@ -511,7 +511,7 @@ function MessageRow({
     return (
       <div className="flex justify-end">
         <div className="max-w-[72%] rounded-2xl rounded-br-sm bg-muted px-4 py-2.5 text-[13px] leading-relaxed">
-          <span className="whitespace-pre-wrap">{msg.content}</span>
+          <span className="whitespace-pre-wrap">{renderInline(msg.content)}</span>
         </div>
       </div>
     )
@@ -615,10 +615,11 @@ function AiAvatar({ active = false }: { active?: boolean }) {
 // ─── MarkdownText ─────────────────────────────────────────────────────────────
 
 function renderInline(text: string): React.ReactNode[] {
-  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`)/g)
+  const parts = text.split(/(\*\*[^*]+\*\*|`[^`]+`|@\w+)/g)
   return parts.map((p, i) => {
     if (p.startsWith("**") && p.endsWith("**")) return <strong key={i}>{p.slice(2, -2)}</strong>
     if (p.startsWith("`") && p.endsWith("`")) return <code key={i} className="rounded bg-muted px-1 py-0.5 font-mono text-[11px]">{p.slice(1, -1)}</code>
+    if (/^@\w+$/.test(p)) return <span key={i} className="inline-flex items-center rounded-[4px] bg-foreground/[0.07] px-1.5 py-px text-[12px] font-medium text-foreground">{p}</span>
     return p
   })
 }
@@ -677,10 +678,50 @@ function Countdown({ expiresAt }: { expiresAt: number }) {
 
 // ─── CreditsExhaustedModal ───────────────────────────────────────────────────
 
-const PLANS: Array<{ name: string; orig: number | null; desc: string; highlight?: boolean }> = [
-  { name: "Starter", orig: 15, desc: "50 credits/mo, 1 workspace" },
-  { name: "Pro", orig: 39, desc: "200 credits/mo, 5 workspaces", highlight: true },
-  { name: "Custom", orig: null, desc: "Unlimited credits, unlimited workspaces" },
+const PLANS: Array<{
+  name: string
+  price: number | null
+  origPrice: number | null
+  highlight?: boolean
+  features: string[]
+}> = [
+  {
+    name: "Starter",
+    price: 12,
+    origPrice: 15,
+    features: [
+      "50 credits / month",
+      "1 workspace",
+      "3 app connections",
+      "Receipt audit log",
+    ],
+  },
+  {
+    name: "Pro",
+    price: 31,
+    origPrice: 39,
+    highlight: true,
+    features: [
+      "200 credits / month",
+      "5 workspaces",
+      "Unlimited app connections",
+      "Full receipt history",
+      "Governance policies",
+      "Priority support",
+    ],
+  },
+  {
+    name: "Custom",
+    price: null,
+    origPrice: null,
+    features: [
+      "Unlimited credits",
+      "Unlimited workspaces",
+      "Custom integrations",
+      "Dedicated account manager",
+      "SSO & enterprise audit",
+    ],
+  },
 ]
 
 export function CreditsExhaustedModal({ open, onClose, offerExpiresAt }: {
@@ -690,7 +731,7 @@ export function CreditsExhaustedModal({ open, onClose, offerExpiresAt }: {
 }) {
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>You&apos;re out of credits</DialogTitle>
           <DialogDescription>
@@ -698,34 +739,45 @@ export function CreditsExhaustedModal({ open, onClose, offerExpiresAt }: {
             <Countdown expiresAt={offerExpiresAt} />.
           </DialogDescription>
         </DialogHeader>
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2.5">
           {PLANS.map((plan) => (
-              <div
-                key={plan.name}
-                className={cn(
-                  "flex items-center justify-between rounded-lg border px-3.5 py-3",
-                  plan.highlight ? "border-foreground bg-foreground text-background" : "border-border"
-                )}
-              >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[13px] font-semibold">{plan.name}</span>
-                    {plan.highlight && <span className="rounded-sm bg-background/20 px-1.5 py-0.5 text-[10px] font-medium">Popular</span>}
-                  </div>
-                  <p className={cn("mt-0.5 text-[11px]", plan.highlight ? "text-background/70" : "text-muted-foreground")}>{plan.desc}</p>
-                </div>
-                {plan.orig !== null ? (
-                <div className="text-right">
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-[15px] font-bold">${Math.round(plan.orig * 0.8)}</span>
-                    <span className={cn("text-[11px]", plan.highlight ? "text-background/70" : "text-muted-foreground")}>/mo</span>
-                  </div>
-                  <span className={cn("text-[10px] line-through", plan.highlight ? "text-background/50" : "text-muted-foreground/50")}>${plan.orig}</span>
-                </div>
-              ) : (
-                <span className={cn("text-[12px] font-medium", plan.highlight ? "text-background" : "text-muted-foreground")}>Contact us</span>
+            <div
+              key={plan.name}
+              className={cn(
+                "rounded-xl border p-4",
+                plan.highlight ? "border-foreground bg-foreground text-background" : "border-border"
               )}
+            >
+              {/* Plan header: name + price */}
+              <div className="mb-3 flex items-start justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-[14px] font-semibold">{plan.name}</span>
+                  {plan.highlight && (
+                    <span className="rounded-sm bg-background/20 px-1.5 py-0.5 text-[10px] font-medium">Popular</span>
+                  )}
+                </div>
+                {plan.price !== null ? (
+                  <div className="shrink-0 text-right">
+                    <div className="flex items-baseline gap-0.5">
+                      <span className="text-[17px] font-bold">${plan.price}</span>
+                      <span className={cn("text-[11px]", plan.highlight ? "text-background/60" : "text-muted-foreground")}>/mo</span>
+                    </div>
+                    <div className={cn("text-[10px] line-through", plan.highlight ? "text-background/40" : "text-muted-foreground/50")}>${plan.origPrice}</div>
+                  </div>
+                ) : (
+                  <span className={cn("shrink-0 text-[12px] font-medium", plan.highlight ? "text-background/70" : "text-muted-foreground")}>Contact us</span>
+                )}
               </div>
+              {/* Feature list */}
+              <div className="flex flex-col gap-1.5">
+                {plan.features.map((f) => (
+                  <div key={f} className="flex items-center gap-2">
+                    <Tick02Icon className={cn("size-3 shrink-0", plan.highlight ? "text-background/50" : "text-muted-foreground")} />
+                    <span className={cn("text-[12px]", plan.highlight ? "text-background/80" : "")}>{f}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
           ))}
           <p className="text-center text-[11px] text-muted-foreground">20% launch discount applied. Cancel anytime.</p>
         </div>
@@ -765,6 +817,7 @@ function AddToolsModal({ open, onClose, connectedAppIds, workspaceId }: {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search tools…"
+              autoFocus
               className="w-full rounded-md border border-border bg-background py-2 pl-8 pr-3 text-[13px] outline-none focus:border-foreground/20"
             />
           </div>
@@ -779,7 +832,7 @@ function AddToolsModal({ open, onClose, connectedAppIds, workspaceId }: {
                   <span className="flex-1 truncate text-[13px] font-medium">{app.name}</span>
                   {connected ? (
                     <div className="flex items-center gap-1.5 text-muted-foreground">
-                      <Tick01Icon className="size-3 shrink-0" />
+                      <Tick02Icon className="size-3 shrink-0" />
                       <span className="text-[12px]">Connected</span>
                     </div>
                   ) : (
@@ -894,7 +947,7 @@ function DemoStatesSection({ connectedAppIds }: { connectedAppIds: string[] }) {
   const mockAiMsg: ChatMessage = {
     id: "demo-ai-1",
     role: "assistant",
-    content: "Here's a summary of your 4 open PRs:\n\n1. **feat: add receipt replay** (#142) · awaiting review\n2. **fix: sidebar collapse** (#140) · 2 comments\n3. **chore: update deps** (#139) · ready to merge\n4. **feat: chat composer** (#137) · draft\n\nI drafted a Slack update for #eng.",
+    content: "4 open PRs on acme/app:\n\n1. **feat: receipt-replay** (#142) · awaiting review — @dana flagged it's blocking her panel work\n2. **fix: sidebar-collapse** (#140) · 2 review comments, all checks passing\n3. **chore: update-deps** (#139) · ready to merge\n4. **feat: chat-composer** (#137) · still in draft\n\nDraft for #eng below — approve to post.",
     createdAt: Date.now() - 89000,
   }
 
@@ -974,7 +1027,7 @@ function DemoStatesSection({ connectedAppIds }: { connectedAppIds: string[] }) {
                     type="button"
                     className="flex items-center gap-1.5 rounded-lg bg-foreground px-3 py-1.5 text-[12px] font-medium text-background transition-opacity hover:opacity-90"
                   >
-                    <Tick01Icon className="size-3" />
+                    <Tick02Icon className="size-3" />
                     Approve
                   </button>
                   <button
@@ -1028,7 +1081,7 @@ function DemoStatesSection({ connectedAppIds }: { connectedAppIds: string[] }) {
               </div>
             </div>
             <div className="max-w-[80%] py-1 text-[13px] leading-relaxed">
-              <strong>chore: update deps</strong> (#139) is ready to merge. All checks pass, no pending reviews.
+              <strong>#139 chore: update-deps</strong> — all checks pass, no pending reviews.
             </div>
           </div>
         </DemoState>
@@ -1078,8 +1131,8 @@ function AppStack({
         {displayed.map((appId, i) => (
           <div
             key={appId}
-            className="relative size-5 overflow-hidden rounded-full border-[1.5px] border-background"
-            style={{ marginLeft: i === 0 ? 0 : -5, zIndex: i + 1 }}
+            className="relative size-7 overflow-hidden rounded-full border-[1.5px] border-background"
+            style={{ marginLeft: i === 0 ? 0 : -7, zIndex: i + 1 }}
             title={appId}
           >
             <AppLogo name={appId} initials={appId.slice(0, 2).toUpperCase()} className="size-full rounded-full" />
@@ -1087,26 +1140,28 @@ function AppStack({
         ))}
         {hasOverflow && (
           <div
-            className="relative flex size-5 shrink-0 items-center justify-center rounded-full border-[1.5px] border-background bg-muted text-[8.5px] font-semibold text-muted-foreground"
-            style={{ marginLeft: -5, zIndex: displayed.length + 1 }}
+            className="relative flex size-7 shrink-0 items-center justify-center rounded-full border-[1.5px] border-background bg-muted text-[9px] font-semibold text-muted-foreground"
+            style={{ marginLeft: -7, zIndex: displayed.length + 1 }}
           >
             +{overflow}
           </div>
         )}
       </button>
 
-      {/* Plus button — separated by a gap when overflow badge is showing */}
+      {/* Plus button — overlaps stack when no overflow; breaks out with gap when +n badge shown */}
       <button
         type="button"
         onClick={onOpenAddTools}
         aria-label="Add tools"
         className={cn(
-          "flex size-5 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground/50 transition-colors hover:border-foreground/20 hover:text-muted-foreground",
-          hasOverflow ? "ml-3" : "ml-1.5",
+          "flex size-7 shrink-0 items-center justify-center rounded-full bg-background text-muted-foreground/50 transition-colors hover:text-muted-foreground",
+          hasOverflow
+            ? "border border-border hover:border-foreground/20"
+            : "border-[1.5px] border-background",
         )}
-        style={{ zIndex: connectedApps.length + 2 }}
+        style={{ marginLeft: hasOverflow ? 12 : -7, zIndex: connectedApps.length + 2 }}
       >
-        <Add01Icon className="size-3" />
+        <Add01Icon className="size-3.5" />
       </button>
     </div>
   )
@@ -1207,7 +1262,7 @@ function ComposerArea({
           <button
             type="button"
             aria-label="Upload file"
-            className="mb-0.5 flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground/35 transition-colors hover:bg-muted hover:text-muted-foreground"
+            className="flex size-7 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           >
             <Upload01Icon className="size-3.5" />
           </button>
@@ -1222,16 +1277,16 @@ function ComposerArea({
               if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend() }
             }}
             placeholder={placeholder}
-            className="max-h-40 flex-1 resize-none overflow-y-auto bg-transparent text-[13px] leading-relaxed outline-none placeholder:text-muted-foreground/40"
+            className="max-h-40 flex-1 resize-none overflow-y-auto bg-transparent text-center text-[13px] leading-relaxed outline-none placeholder:text-muted-foreground/40"
             aria-label="Chat message"
           />
 
           {/* Mic + Send — bottom-aligned with textarea */}
-          <div className="mb-0.5 flex shrink-0 items-center gap-1.5">
+          <div className="flex shrink-0 items-center gap-1.5">
             <button
               type="button"
               aria-label="Voice input"
-              className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground/35 transition-colors hover:bg-muted hover:text-muted-foreground"
+              className="flex size-7 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               <Mic01Icon className="size-3.5" />
             </button>

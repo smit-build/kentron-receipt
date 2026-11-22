@@ -4,7 +4,7 @@
  * size="full": animated loop (phases 0-6). blocked prop shows blocked flow variant.
  */
 import { useEffect, useRef, useState } from "react"
-import { ArrowDown01Icon, ArrowRight01Icon, Cancel01Icon, File01Icon, Settings01Icon, Shield01Icon, Tick01Icon } from "hugeicons-react"
+import { ArrowDown01Icon, ArrowRight01Icon, Cancel01Icon, File01Icon, Settings01Icon, Shield01Icon, Tick02Icon } from "hugeicons-react"
 import { AppLogo } from "@/components/app-logo"
 import { integrations } from "@/lib/integrations"
 import { cn } from "@/lib/utils"
@@ -144,7 +144,7 @@ export function HowReceiptWorks({
                   <span className={cn("ml-auto text-[11px] font-medium transition-all duration-300", active ? "opacity-100" : "opacity-0")}>
                     {rowBlocked
                       ? <Cancel01Icon className="size-2.5 text-destructive" />
-                      : <Tick01Icon className="size-2.5" />}
+                      : <Tick02Icon className="size-2.5" />}
                   </span>
                 </div>
               ))}

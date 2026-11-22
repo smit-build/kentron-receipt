@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Tick01Icon } from "hugeicons-react"
+import { Tick02Icon } from "hugeicons-react"
 import { useStore } from "@/lib/store"
 import { getSuggestedApps } from "@/lib/data/intent-apps"
 import { integrations } from "@/lib/integrations"
@@ -48,7 +48,7 @@ export function StepApps({ workspaceId, onNext, onSkip }: StepAppsProps) {
 
               {connected ? (
                 <div className="flex items-center gap-1.5 text-muted-foreground">
-                  <Tick01Icon className="size-3.5" />
+                  <Tick02Icon className="size-3.5" />
                   <span className="text-[12px]">Connected</span>
                 </div>
               ) : (

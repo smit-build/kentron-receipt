@@ -1,7 +1,7 @@
 import * as React from "react"
 import { cn } from "cn"
 import { Select as SelectPrimitive } from "radix-ui"
-import { ArrowDown01Icon, ArrowUp01Icon, Tick01Icon } from "hugeicons-react"
+import { ArrowDown01Icon, ArrowUp01Icon, Tick02Icon } from "hugeicons-react"
 
 function Select({
   ...props
@@ -116,7 +116,7 @@ function SelectItem({
     >
       <span className="pointer-events-none absolute right-2 flex size-4 items-center justify-center">
         <SelectPrimitive.ItemIndicator>
-          <Tick01Icon className="pointer-events-none" />
+          <Tick02Icon className="pointer-events-none" />
         </SelectPrimitive.ItemIndicator>
       </span>
       <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>

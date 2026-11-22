@@ -138,7 +138,7 @@ export function WorkspaceShell({ name, onNavigateToChat }: WorkspaceShellProps) 
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span>
-                    <Button size="sm" disabled>
+                    <Button disabled>
                       <Add01Icon data-icon="inline-start" />
                       Connect client
                     </Button>
@@ -147,7 +147,7 @@ export function WorkspaceShell({ name, onNavigateToChat }: WorkspaceShellProps) 
                 <TooltipContent>Not available in the sample workspace</TooltipContent>
               </Tooltip>
             ) : (
-              <Button size="sm" onClick={() => setConnectClientOpen(true)}>
+              <Button onClick={() => setConnectClientOpen(true)}>
                 <Add01Icon data-icon="inline-start" />
                 Connect client
                 {clientCount > 0 && (

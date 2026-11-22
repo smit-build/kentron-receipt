@@ -3,7 +3,7 @@
  * Required items: 4. Optional: 2. Driven by store checklistStatus.
  * Hides permanently once all 4 required items are done, or when user clicks Hide.
  */
-import { Tick01Icon } from "hugeicons-react"
+import { Tick02Icon } from "hugeicons-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { useStore, checklistStatus } from "@/lib/store"
@@ -113,7 +113,7 @@ function ChecklistRow({
           done && "border-foreground bg-foreground"
         )}
       >
-        {done && <Tick01Icon className="size-3" strokeWidth={3} />}
+        {done && <Tick02Icon className="size-3" strokeWidth={3} />}
       </div>
       <div className={cn("min-w-0 flex-1 text-[13px]", done && "text-muted-foreground line-through")}>
         {label}
