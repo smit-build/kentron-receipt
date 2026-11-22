@@ -21,11 +21,13 @@ import { useEffect, useRef, useState } from "react"
 import {
   Add01Icon,
   ArrowRight01Icon,
-  ArrowUp01Icon,
   Cancel01Icon,
+  Mic01Icon,
   Search01Icon,
+  Settings01Icon,
   Tick01Icon,
   Upload01Icon,
+  User02Icon,
 } from "hugeicons-react"
 import { useStore, chatState, TOTAL_CREDITS, type Receipt } from "@/lib/store"
 import {
@@ -35,6 +37,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog"
+import { isDevMode } from "@/components/dev-panel"
 import { mockSendMessage, type ChatMessage } from "@/lib/services/chat"
 import { getReadyStatePrompts } from "@/lib/data/app-prompts"
 import { getSuggestedApps } from "@/lib/data/intent-apps"
@@ -118,6 +121,31 @@ const MOCK_RECEIPT: Receipt = {
   ],
 }
 
+// ─── Avatar color system ─────────────────────────────────────────────────────
+
+const USER_AVATAR_COLORS = [
+  { bg: "oklch(0.95 0.015 25)", fg: "oklch(0.40 0.07 25)" },
+  { bg: "oklch(0.95 0.015 60)", fg: "oklch(0.40 0.06 60)" },
+  { bg: "oklch(0.95 0.015 100)", fg: "oklch(0.40 0.06 100)" },
+  { bg: "oklch(0.95 0.015 150)", fg: "oklch(0.40 0.06 150)" },
+  { bg: "oklch(0.95 0.015 195)", fg: "oklch(0.40 0.06 195)" },
+  { bg: "oklch(0.95 0.015 240)", fg: "oklch(0.40 0.06 240)" },
+  { bg: "oklch(0.95 0.015 270)", fg: "oklch(0.40 0.07 270)" },
+  { bg: "oklch(0.95 0.015 300)", fg: "oklch(0.40 0.07 300)" },
+  { bg: "oklch(0.95 0.015 330)", fg: "oklch(0.40 0.07 330)" },
+  { bg: "oklch(0.95 0 0)", fg: "oklch(0.40 0 0)" },
+]
+
+function hashStr(s: string): number {
+  let h = 0
+  for (let i = 0; i < s.length; i++) h = Math.imul(31, h) + s.charCodeAt(i) | 0
+  return Math.abs(h)
+}
+
+function getUserAvatarColor(seed: string) {
+  return USER_AVATAR_COLORS[hashStr(seed) % USER_AVATAR_COLORS.length]
+}
+
 // ─── ChatScreen ──────────────────────────────────────────────────────────────
 
 export function ChatScreen({ onCreditsExhausted }: { onCreditsExhausted?: () => void } = {}) {
@@ -150,6 +178,8 @@ export function ChatScreen({ onCreditsExhausted }: { onCreditsExhausted?: () => 
   const [showDemoStates, setShowDemoStates] = useState(false)
   // add tools modal
   const [showAddTools, setShowAddTools] = useState(false)
+  // connected apps modal (clicking the app stack in composer)
+  const [showConnectedApps, setShowConnectedApps] = useState(false)
 
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -249,27 +279,15 @@ export function ChatScreen({ onCreditsExhausted }: { onCreditsExhausted?: () => 
     setMentionOpen(false)
   }
 
-  function handleNewChat() {
-    if (streamIntervalRef.current) clearInterval(streamIntervalRef.current)
-    streamIntervalRef.current = null
-    pendingStreamRef.current = null
-    setMessages([])
-    setStreamMsg(null)
-    setStreamShown(0)
-    setInput("")
-    setMentionOpen(false)
-    setShowDemoStates(false)
-    setLocalReceipts({})
-  }
-
   const inConversation = messages.length > 0 || streamMsg !== null
   const creditsRemaining = TOTAL_CREDITS - (state.creditsUsed ?? 0)
   const userInitials = state.user
     ? (state.user.firstName[0] + (state.user.email?.[0] ?? "")).toUpperCase()
     : "U"
+  const avatarColor = getUserAvatarColor(state.user?.email ?? state.user?.firstName ?? userInitials)
 
-  // ── demo toggle rendered at the bottom of each content area ───────────────
-  const demoToggle = (
+  // ── demo toggle — dev-only ────────────────────────────────────────────────
+  const demoToggle = isDevMode() ? (
     <div className="flex justify-end pt-5 pb-1">
       <button
         type="button"
@@ -282,13 +300,13 @@ export function ChatScreen({ onCreditsExhausted }: { onCreditsExhausted?: () => 
         {showDemoStates ? "hide states" : "check all states"}
       </button>
     </div>
-  )
+  ) : null
 
   return (
     <div className="flex min-h-svh flex-1 flex-col">
 
       {/* ── Header ─────────────────────────────────────────────────────────── */}
-      <header className="flex h-10 shrink-0 items-center justify-between border-b border-border px-6">
+      <header className="flex h-header shrink-0 items-center justify-between border-b-[1.5px] border-border px-6">
         <div className="flex items-center gap-1">
           <span className="text-[13px] font-medium text-muted-foreground">Chatting in</span>
           <button
@@ -299,19 +317,12 @@ export function ChatScreen({ onCreditsExhausted }: { onCreditsExhausted?: () => 
             <ArrowRight01Icon className="ml-0.5 size-3 rotate-90 text-muted-foreground" />
           </button>
         </div>
-        <div className="flex items-center gap-2">
-          {inConversation && (
-            <button
-              type="button"
-              onClick={handleNewChat}
-              className="rounded-md px-2.5 py-1.5 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-            >
-              New chat
-            </button>
-          )}
-          <div className="flex size-7 shrink-0 items-center justify-center rounded-full bg-foreground text-[10px] font-bold tracking-wide text-background">
-            {userInitials}
-          </div>
+        <div
+          className="flex size-7 shrink-0 items-center justify-center rounded-full"
+          style={{ backgroundColor: avatarColor.bg, color: avatarColor.fg }}
+          title={state.user?.firstName ?? "User"}
+        >
+          <User02Icon className="size-3.5" />
         </div>
       </header>
 
@@ -364,8 +375,8 @@ export function ChatScreen({ onCreditsExhausted }: { onCreditsExhausted?: () => 
 
       {/* ── Content C: ready, no messages ────────────────────────────────── */}
       {cs === "ready" && !inConversation && (
-        <div className="flex-1 overflow-y-auto px-6 py-14">
-          <div className="mx-auto w-full max-w-[640px]">
+        <div className="flex flex-1 flex-col items-center justify-center overflow-y-auto px-6 py-10">
+          <div className="w-full max-w-[640px]">
             <h2 className="text-[22px] font-semibold tracking-tight">
               {state.user?.firstName ? `Hi ${state.user.firstName}, what can I help with?` : "What can I help with?"}
             </h2>
@@ -450,6 +461,7 @@ export function ChatScreen({ onCreditsExhausted }: { onCreditsExhausted?: () => 
             connectedApps={connectedAppIds}
             onInsertMention={insertMention}
             onOpenAddTools={() => setShowAddTools(true)}
+            onOpenConnectedApps={() => setShowConnectedApps(true)}
             placeholder={cs === "no-apps" ? "Ask a general question…" : "Ask anything…"}
           />
         </div>
@@ -458,6 +470,13 @@ export function ChatScreen({ onCreditsExhausted }: { onCreditsExhausted?: () => 
       <AddToolsModal
         open={showAddTools}
         onClose={() => setShowAddTools(false)}
+        connectedAppIds={connectedAppIds}
+        workspaceId={activeWs?.id ?? ""}
+      />
+
+      <ConnectedAppsModal
+        open={showConnectedApps}
+        onClose={() => setShowConnectedApps(false)}
         connectedAppIds={connectedAppIds}
         workspaceId={activeWs?.id ?? ""}
       />
@@ -492,8 +511,7 @@ function MessageRow({
 
   return (
     <div className="flex gap-2.5">
-      <AiAvatar />
-      <div className="flex flex-col gap-2 pt-0.5">
+      <div className="flex flex-col gap-2">
         <div className="max-w-[80%] text-[13px] leading-relaxed">
           <MarkdownText content={msg.content} />
         </div>
@@ -793,6 +811,67 @@ function AddToolsModal({ open, onClose, connectedAppIds, workspaceId }: {
   )
 }
 
+// ─── ConnectedAppsModal ──────────────────────────────────────────────────────
+
+function ConnectedAppsModal({ open, onClose, connectedAppIds }: {
+  open: boolean
+  onClose: () => void
+  connectedAppIds: string[]
+  workspaceId: string
+}) {
+  const [hoveredApp, setHoveredApp] = useState<string | null>(null)
+  const connected = integrations.filter((i) => connectedAppIds.includes(i.name))
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="flex max-h-[70vh] flex-col gap-0 overflow-hidden p-0 sm:max-w-sm">
+        <DialogHeader className="px-5 pb-3 pt-5">
+          <DialogTitle>Connected apps</DialogTitle>
+          <DialogDescription>Apps available to your agent in this workspace.</DialogDescription>
+        </DialogHeader>
+        <div className="flex-1 overflow-y-auto border-t border-border">
+          {connected.length === 0 ? (
+            <p className="px-5 py-6 text-[13px] text-muted-foreground">No apps connected yet.</p>
+          ) : (
+            <div className="flex flex-col divide-y divide-border px-5">
+              {connected.map((app) => (
+                <div
+                  key={app.name}
+                  className="group flex items-center gap-3 py-3"
+                  onMouseEnter={() => setHoveredApp(app.name)}
+                  onMouseLeave={() => setHoveredApp(null)}
+                >
+                  <AppLogo name={app.name} initials={app.initials} className="size-6 shrink-0 rounded-[4px]" />
+                  <span className="flex-1 truncate text-[13px] font-medium">{app.name}</span>
+                  <button
+                    type="button"
+                    aria-label={`${app.name} settings`}
+                    className={cn(
+                      "flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground/50 transition-all",
+                      hoveredApp === app.name ? "opacity-100 hover:bg-muted hover:text-muted-foreground" : "opacity-0",
+                    )}
+                  >
+                    <Settings01Icon className="size-3.5" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+        <div className="shrink-0 border-t border-border p-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full rounded-md bg-foreground px-4 py-2 text-[13px] font-medium text-background transition-opacity hover:opacity-90"
+          >
+            Done
+          </button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
 // ─── DemoStatesSection ───────────────────────────────────────────────────────
 
 function DemoStatesSection({ connectedAppIds }: { connectedAppIds: string[] }) {
@@ -964,9 +1043,20 @@ function DemoState({ label, children }: { label: string; children: React.ReactNo
 
 // ─── ComposerArea ─────────────────────────────────────────────────────────────
 
+/** Paper plane send icon — faces upper-right (classic send direction). */
+function PaperPlaneIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" transform="rotate(-30 12 12)" />
+    </svg>
+  )
+}
+
+const APP_STACK_MAX = 4
+
 function ComposerArea({
   input, onChange, onSend, sending, mentionOpen, connectedApps, onInsertMention,
-  onOpenAddTools, placeholder = "Ask anything…",
+  onOpenAddTools, onOpenConnectedApps, placeholder = "Ask anything…",
 }: {
   input: string
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void
@@ -976,9 +1066,25 @@ function ComposerArea({
   connectedApps: string[]
   onInsertMention: (appId: string) => void
   onOpenAddTools?: () => void
+  onOpenConnectedApps?: () => void
   placeholder?: string
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  // Auto-focus textarea when user starts typing anywhere on the page
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (
+        document.activeElement !== textareaRef.current &&
+        !e.ctrlKey && !e.metaKey && !e.altKey &&
+        e.key.length === 1
+      ) {
+        textareaRef.current?.focus()
+      }
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [])
 
   useEffect(() => {
     if (!input && textareaRef.current) {
@@ -999,6 +1105,11 @@ function ComposerArea({
   }
 
   const canSend = !!input.trim() && !sending
+
+  // App stack: show latest 4, overflow as "+n"
+  const displayedApps = connectedApps.slice(0, APP_STACK_MAX)
+  const overflow = Math.max(0, connectedApps.length - APP_STACK_MAX)
+  const hasOverflow = overflow > 0
 
   return (
     <div className="relative">
@@ -1021,11 +1132,22 @@ function ComposerArea({
 
       {/* Composer container */}
       <div className={cn(
-        "rounded-2xl border border-border bg-background transition-all duration-150",
+        "overflow-hidden rounded-2xl border border-border bg-background transition-all duration-150",
         "focus-within:border-foreground/20 focus-within:shadow-[0_0_0_4px_oklch(0_0_0/0.04)]",
       )}>
-        {/* Textarea */}
-        <div className="px-4 pt-3.5 pb-1.5">
+
+        {/* Textarea row: upload | text | mic + send */}
+        <div className="flex items-end gap-2 px-3 pt-3 pb-2.5">
+          {/* Upload — inside textarea area, top-aligned */}
+          <button
+            type="button"
+            aria-label="Upload file"
+            className="mb-0.5 flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground/35 transition-colors hover:bg-muted hover:text-muted-foreground"
+          >
+            <Upload01Icon className="size-3.5" />
+          </button>
+
+          {/* Growing textarea */}
           <textarea
             ref={textareaRef}
             rows={1}
@@ -1035,58 +1157,101 @@ function ComposerArea({
               if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend() }
             }}
             placeholder={placeholder}
-            className="w-full max-h-40 resize-none overflow-y-auto bg-transparent text-[13px] leading-relaxed outline-none placeholder:text-muted-foreground/40"
+            className="max-h-40 flex-1 resize-none overflow-y-auto bg-transparent text-[13px] leading-relaxed outline-none placeholder:text-muted-foreground/40"
             aria-label="Chat message"
           />
-        </div>
 
-        {/* Action bar */}
-        <div className="flex items-center justify-between px-3 pb-3 pt-0.5">
-          {/* Left: upload + app logos + add button */}
-          <div className="flex items-center gap-2">
+          {/* Mic + Send — bottom-aligned with textarea */}
+          <div className="mb-0.5 flex shrink-0 items-center gap-1.5">
             <button
               type="button"
-              aria-label="Upload file"
-              className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground/50 transition-colors hover:bg-muted hover:text-muted-foreground"
+              aria-label="Voice input"
+              className="flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground/35 transition-colors hover:bg-muted hover:text-muted-foreground"
             >
-              <Upload01Icon className="size-3.5" />
+              <Mic01Icon className="size-3.5" />
             </button>
-            <div className="flex items-center gap-1.5">
-              {connectedApps.slice(0, 3).map((appId) => (
-                <div key={appId} className="opacity-25 transition-opacity hover:opacity-60" title={`@${appId}`}>
-                  <AppLogo name={appId} initials={appId.slice(0, 2).toUpperCase()} className="size-4 rounded-[3px]" />
-                </div>
-              ))}
+            <button
+              type="button"
+              onClick={handleSend}
+              disabled={!canSend}
+              aria-label="Send"
+              className={cn(
+                "flex size-7 shrink-0 items-center justify-center rounded-full transition-all duration-150",
+                canSend
+                  ? "bg-foreground text-background hover:opacity-85"
+                  : "bg-muted text-muted-foreground/30",
+              )}
+            >
+              {sending ? (
+                <span className="block size-2.5 rounded-full border-2 border-current border-t-transparent animate-spin" />
+              ) : (
+                <PaperPlaneIcon className="size-3.5" />
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Tool strip — app stack + plus button only */}
+        <div className="flex items-center border-t border-border bg-muted/40 px-3 py-1.5">
+          {/* App stack (overlapping circles) */}
+          {connectedApps.length > 0 ? (
+            <div className="flex items-center">
+              {/* Clickable stack */}
+              <button
+                type="button"
+                onClick={onOpenConnectedApps}
+                aria-label="Manage connected apps"
+                className="flex items-center"
+              >
+                {displayedApps.map((appId, i) => (
+                  <div
+                    key={appId}
+                    className="relative size-5 rounded-full border-[1.5px] border-background"
+                    style={{ marginLeft: i === 0 ? 0 : "-5px", zIndex: i + 1 }}
+                    title={appId}
+                  >
+                    <AppLogo
+                      name={appId}
+                      initials={appId.slice(0, 2).toUpperCase()}
+                      className="size-full rounded-full"
+                    />
+                  </div>
+                ))}
+                {overflow > 0 && (
+                  <div
+                    className="relative flex size-5 shrink-0 items-center justify-center rounded-full border-[1.5px] border-background bg-muted text-[8.5px] font-semibold text-muted-foreground"
+                    style={{ marginLeft: "-5px", zIndex: displayedApps.length + 1 }}
+                  >
+                    +{overflow}
+                  </div>
+                )}
+              </button>
+
+              {/* Plus button — gap depends on whether overflow is shown */}
               <button
                 type="button"
                 onClick={onOpenAddTools}
                 aria-label="Add tools"
-                className="flex size-5 shrink-0 items-center justify-center rounded-md border border-border text-muted-foreground/50 transition-colors hover:border-foreground/20 hover:text-muted-foreground"
+                className={cn(
+                  "flex size-5 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground/50 transition-colors hover:border-foreground/20 hover:text-muted-foreground",
+                  hasOverflow ? "ml-2" : "ml-1.5",
+                )}
+                style={{ zIndex: connectedApps.length + 2 }}
               >
                 <Add01Icon className="size-3" />
               </button>
             </div>
-          </div>
-
-          {/* Right: send button */}
-          <button
-            type="button"
-            onClick={handleSend}
-            disabled={!canSend}
-            aria-label="Send"
-            className={cn(
-              "flex size-7 shrink-0 items-center justify-center rounded-full transition-all duration-150",
-              canSend
-                ? "bg-foreground text-background hover:opacity-85"
-                : "bg-muted text-muted-foreground/30",
-            )}
-          >
-            {sending ? (
-              <span className="block size-2.5 rounded-full border-2 border-current border-t-transparent animate-spin" />
-            ) : (
-              <ArrowUp01Icon className="size-3.5" />
-            )}
-          </button>
+          ) : (
+            /* No apps: just the plus button */
+            <button
+              type="button"
+              onClick={onOpenAddTools}
+              aria-label="Add tools"
+              className="flex size-5 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground/50 transition-colors hover:border-foreground/20 hover:text-muted-foreground"
+            >
+              <Add01Icon className="size-3" />
+            </button>
+          )}
         </div>
       </div>
     </div>
