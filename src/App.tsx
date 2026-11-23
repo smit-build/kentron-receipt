@@ -20,12 +20,14 @@ import { SidebarProvider } from "@/components/ui/sidebar"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import { buildSampleReceipts } from "@/lib/services/receipts"
 import { defaultTools } from "@/lib/services/integrations-svc"
+import { CommandPalette } from "@/components/command-palette"
 
 function App() {
   const { state, dispatch } = useStore()
   const [createOpen, setCreateOpen] = useState(false)
   const [showCreditsModal, setShowCreditsModal] = useState(false)
   const [showExhaustedModal, setShowExhaustedModal] = useState(false)
+  const [paletteOpen, setPaletteOpen] = useState(false)
   const [offerExpiresAt] = useState(() => Date.now() + 48 * 60 * 60 * 1000)
   const creditsModalTriggered = useRef(false)
 
@@ -45,6 +47,18 @@ function App() {
     (path: string) => dispatch({ type: "SET_LAST_VISITED_ROUTE", payload: path }),
     [dispatch]
   )
+
+  // Ctrl+K / Cmd+K → command palette
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault()
+        setPaletteOpen((v) => !v)
+      }
+    }
+    window.addEventListener("keydown", onKeyDown)
+    return () => window.removeEventListener("keydown", onKeyDown)
+  }, [])
 
   // Seed sample workspace once after sign-up
   useEffect(() => {
@@ -182,6 +196,12 @@ function App() {
           setCreateOpen(false)
           navigate("/workspace")
         }}
+      />
+
+      <CommandPalette
+        open={paletteOpen}
+        onOpenChange={setPaletteOpen}
+        onSelectIntegration={() => navigate("/workspace")}
       />
     </TooltipProvider>
   )
