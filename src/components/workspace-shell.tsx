@@ -2,11 +2,20 @@ import { useState } from "react"
 import {
   Add01Icon,
   UserAdd01Icon,
+  Logout01Icon,
 } from "hugeicons-react"
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { WorkspaceDashboard } from "@/components/workspace-dashboard"
@@ -85,11 +94,35 @@ export function WorkspaceShell({ name, onNavigateToChat }: WorkspaceShellProps) 
           <span className="text-border">/</span>
           <span className="font-medium text-foreground">{name}</span>
         </nav>
-        <Avatar className="size-7">
-          <AvatarFallback className="text-[10px] font-bold">
-            {state.user ? (state.user.firstName[0] ?? "S").toUpperCase() : "SU"}
-          </AvatarFallback>
-        </Avatar>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button type="button" className="rounded-full outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              <Avatar className="size-7 cursor-pointer">
+                <AvatarFallback className="text-[10px] font-bold">
+                  {state.user ? (state.user.firstName[0] ?? "S").toUpperCase() : "SU"}
+                </AvatarFallback>
+              </Avatar>
+            </button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            {state.user && (
+              <>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="text-[13px] font-medium">{state.user.firstName}</div>
+                  <div className="text-[11px] text-muted-foreground">{state.user.email}</div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+              </>
+            )}
+            <DropdownMenuItem
+              className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer"
+              onClick={() => dispatch({ type: "RESET" })}
+            >
+              <Logout01Icon data-icon="inline-start" />
+              Sign out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </header>
 
       <div className="w-full max-w-[1600px] flex-1 px-6 py-8">
